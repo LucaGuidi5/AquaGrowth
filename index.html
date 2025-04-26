@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Mia Prima Pagina Web</title>
+    <title>AquaGrowth</title>
+    <link 
+    rel="stylesheet" 
+    href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" 
+   
+    crossorigin=""
+  />
+    <script src="utility.js" defer> </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,6 +24,8 @@
         }
         .card {
             background: white;
+            height: 800px;
+            width: 1000px;
             padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -41,14 +50,64 @@
         .btn:hover {
             background-color: #0056b3;
         }
+
+        #mapid {
+            height: 575px; /* Altezza predefinita della mappa */
+            width: 100%;
+        }
+
+        /* Stili per schermi più piccoli */
+        @media (max-width: 600px) {
+            #mapid {
+                height: 300px;  
+            }
+            h1 {
+                font-size: 1.5em;
+                padding: 0.5em;
+            }
+        }
+            
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>Ciao Mondo!</h1>
-    <p>Questa è una semplice pagina web creata per te. 🚀</p>
-    <button class="btn" onclick="alert('Benvenuto!')">Cliccami</button>
+    <h1>AquaGrowth</h1>
+    <h4>by CLUCA</h4>
+
+    <button class="btn" onclick=readData()>Leggi dati da file json</button>
+    <p>Lettura dati: <span id="xxx"> a</span></p>
+
+
+    <div id="mapid"></div>
+
+    <script 
+    src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" 
+    
+    crossorigin=""
+  ></script>
+  <script>
+    // Inizializza la mappa specificando l'ID dell'elemento HTML che la conterrà
+    // Assicurati che l'elemento con id 'mapid' esista nel DOM prima di inizializzare la mappa
+    var mapElement = document.getElementById('mapid');
+    if (mapElement) {
+        var mymap = L.map('mapid').setView([45.4408, 12.3155], 10); // Coordinate di Rimini, Italia; Zoom 13
+
+        // Aggiungi un layer di tile (immagini della mappa) da OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+            // L'attributo 'attribution' è importante per rispettare i termini di utilizzo di OpenStreetMap
+        }).addTo(mymap); // Aggiungi il layer alla mappa
+
+        // Aggiungi un marker (opzionale)
+        var marker = L.marker([45.4408, 12.3155]).addTo(mymap);
+        marker.bindPopup("<b>Benvenuto a Venezia!</b>").openPopup(); // Aggiungi un popup al marker
+    } else {
+        console.error('Element with id "mapid" not found.  Map cannot be initialized.');
+    }
+
+</script>
+    
 </div>
 
 </body>
