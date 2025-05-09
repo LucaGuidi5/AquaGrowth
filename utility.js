@@ -2,8 +2,11 @@
 let map;
 let dati;
 //let data2visualize;
-let layerFigure;
-let chiaviPredizioni;
+//let layerFigure;
+let layerAreeIdonee;
+let controlLayers;
+const overlayLayers = {};
+//let chiaviPredizioni;
 
 const metriQuadrato = 1000;
 
@@ -45,6 +48,7 @@ let comboBoxControl = L.Control.extend({
   }
 });
 
+/*
 async function readData() {
   try {
       const response = await fetch('test.json');
@@ -56,6 +60,70 @@ async function readData() {
       chiaviPredizioni = Object.keys(dati)
   } catch (error) {
       console.error('Errore durante il caricamento dei dati:', error);
+  }
+}
+*/
+async function readDataAreeIdonee() {
+  try {
+
+    fetch('aree_idonee_venericoltura.geojson') 
+        .then(response => response.json())
+        .then(geojsonData => {
+            let geojsonLayer = L.geoJSON(geojsonData, {
+              style: function (feature) {
+                return {
+                  color: "blue",         // colore del bordo
+                  weight: 2,             // spessore linea
+                  fillColor: "lightblue",// colore interno (per poligoni)
+                  fillOpacity: 0.5       // opacità riempimento
+                };
+              }
+            });
+
+            overlayLayers["Aree idonee alla venericoltura"] = geojsonLayer;
+            geojsonLayer.addTo(map);
+
+            updateLayerControl();
+        });
+    
+        
+  } catch (error) {
+      console.error('Errore durante il caricamento dei dati rellativi alle aree idonee:', error);
+  }
+}
+
+async function readDataPredizioni() {
+  try {
+
+    fetch('voronoi_clipped.geojson') 
+        .then(response => response.json())
+        .then(geojsonData => {
+
+            let geojsonLayer = L.geoJSON(geojsonData, {
+              style: feature => ({
+                color: feature.properties.color,   // bordo
+                fillColor: feature.properties.color, // riempimento
+                weight: 1,
+                fillOpacity: 0.5
+              }),
+              onEachFeature: (feature, layer) => {
+                const pom = feature.properties["POM (mg/l)"];
+                layer.on('click', () => {
+                  layer.bindPopup(`POM: ${pom} mg/l`).openPopup();
+                });
+              }
+            });
+
+            geojsonLayer.addTo(map);
+
+            overlayLayers["Indice di crescita delle ostriche"] = geojsonLayer;
+            geojsonLayer.addTo(map); 
+            updateLayerControl();    
+            
+        });
+        
+  } catch (error) {
+      console.error('Errore durante il caricamento dei dati rellativi alle aree idonee:', error);
   }
 }
 
@@ -80,7 +148,14 @@ function initializeMap(){
     }
 }
 
+function updateLayerControl() {
+  if (controlLayers) {
+    controlLayers.remove();
+  }
+  controlLayers = L.control.layers(null, overlayLayers).addTo(map);
+}
 
+/*
 function createSquare(lat, lon, sideLengthMeters, color) {
   const deltaLat = (sideLengthMeters / 2) / 111320; // 1° latitudine ≈ 111.32 km
   const deltaLon = (sideLengthMeters / 2) / (40075000 * Math.cos(lat * Math.PI / 180) / 360);
@@ -97,6 +172,8 @@ function createSquare(lat, lon, sideLengthMeters, color) {
     weight: 1
   }).addTo(layerFigure);
 }
+
+
 
 function updateLayer(punti){
 
@@ -132,17 +209,20 @@ function updateLayer(punti){
     createSquare(punto[0], punto[1], metriQuadrato, "red");
   });
 }
+   */
 /*
 map.on('zoomend', () => {
   createHeatLayer(data);
 });
 */
-window.readData = readData;
+//window.readData = readData;
 
 document.addEventListener('DOMContentLoaded', async () => {
   initializeMap();
-  await readData();
-  layerFigure = L.layerGroup().addTo(map);
-  map.addControl(new comboBoxControl());
-  updateLayer(dati.sett1);
+  //await readData();
+  await readDataAreeIdonee();
+  await readDataPredizioni();
+  //layerFigure = L.layerGroup().addTo(map);
+  //map.addControl(new comboBoxControl());
+  //updateLayer(dati.sett1);
 });
