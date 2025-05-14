@@ -63,6 +63,7 @@ async function readData() {
   }
 }
 */
+
 async function readDataAreeIdonee() {
   try {
 
@@ -77,10 +78,11 @@ async function readDataAreeIdonee() {
                   fillColor: "lightblue",// colore interno (per poligoni)
                   fillOpacity: 0.5       // opacità riempimento
                 };
-              }
+              },
+              zIndex: 1
             });
 
-            overlayLayers["Aree idonee alla venericoltura"] = geojsonLayer;
+            overlayLayers["Legal areas for bivalve culture"] = geojsonLayer;
             geojsonLayer.addTo(map);
 
             updateLayerControl();
@@ -88,14 +90,14 @@ async function readDataAreeIdonee() {
     
         
   } catch (error) {
-      console.error('Errore durante il caricamento dei dati rellativi alle aree idonee:', error);
+      console.error('Error on loading areas: ', error);
   }
 }
 
 async function readDataPredizioni() {
   try {
 
-    fetch('voronoi_clipped.geojson') 
+    fetch('mappa_12mesi.geojson') 
         .then(response => response.json())
         .then(geojsonData => {
 
@@ -107,23 +109,31 @@ async function readDataPredizioni() {
                 fillOpacity: 0.5
               }),
               onEachFeature: (feature, layer) => {
-                const pom = feature.properties["POM (mg/l)"];
+                const growth_tissue = feature.properties["Final_Tissue_Weight"];
+                const growth_shell = feature.properties["Final_Shell_Weight"];
+                const growth_tot = growth_tissue + growth_shell;
+                const growth_tissue_rate = feature.properties["Final_Tissue_Weight"];
+                const growth_shell_rate = feature.properties["Final_Shell_Weight"];
+
                 layer.on('click', () => {
-                  layer.bindPopup(`POM: ${pom} mg/l`).openPopup();
+                  layer.bindPopup(`
+                      <strong>Total Weight:</strong> ${growth_tot} (g) <br />
+                      <strong>Specific Growth Rate Tissue:</strong> ${growth_tissue_rate} % <br />
+                      <strong>Specific Growth Rate Shell:</strong> ${growth_shell_rate} %
+                    `).openPopup();
                 });
               }
             });
 
             geojsonLayer.addTo(map);
 
-            overlayLayers["Indice di crescita delle ostriche"] = geojsonLayer;
+            overlayLayers["Oysters predicted growth (12 month)"] = geojsonLayer;
             geojsonLayer.addTo(map); 
             updateLayerControl();    
-            
         });
         
   } catch (error) {
-      console.error('Errore durante il caricamento dei dati rellativi alle aree idonee:', error);
+      console.error('Error on loading prediction map: ', error);
   }
 }
 
@@ -136,7 +146,8 @@ function initializeMap(){
 
         // Aggiungi un layer di tile (immagini della mappa) da OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            zIndex: 0
             // L'attributo 'attribution' è importante per rispettare i termini di utilizzo di OpenStreetMap
         }).addTo(map); // Aggiungi il layer alla mappa
 
